@@ -40,7 +40,7 @@ Here are some ideas to get you started:
 			개발기간 : 2024.05.10 ~ 05.26
 			핵심역할 : 자료수집, ai 모델 학습, ai 학습
 				스킬 : 딥러닝, resnet 
-
+<https://www.notion.so/cd22f4013d8f45eca136c2a5939376d4>
 ## ⚡강의계획서 챗봇
 		강의계획서 특화 챗봇
 			개발기간 : 2024.06.03 ~ 06.14
