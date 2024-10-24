@@ -29,7 +29,6 @@ Here are some ideas to get you started:
 
 ## ⚡사용기술
 ### 	스킬 : Python, 자연어 처리, selenium
-<https://www.notion.so/be6863e600af4dab8491a1a9cf98c165>
 
 ## ⚡핵심기능
 ### 	1. 데이터 수집 및 분석을 통해 GS25 조사
