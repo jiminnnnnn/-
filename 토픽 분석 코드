@@ -1,0 +1,214 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 패키지"
+      ],
+      "metadata": {
+        "id": "NQ4iLZ4a_vwS"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install konlpy\n",
+        "!pip install -U pyLDAvis\n",
+        "\n",
+        "import pandas as pd\n",
+        "import pyLDAvis.lda_model\n",
+        "from konlpy.tag import Okt\n",
+        "import re\n",
+        "from tqdm import tqdm\n",
+        "from konlpy.tag import Okt\n",
+        "from tqdm import tqdm"
+      ],
+      "metadata": {
+        "id": "n-Jq7cZx_vSy"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = pd.read_csv('편의점 우산_카페.csv')\n",
+        "df"
+      ],
+      "metadata": {
+        "id": "4w-AO35TAhhF"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "61q_aCj39S5X"
+      },
+      "outputs": [],
+      "source": [
+        "comments_df = df['comments']\n",
+        "content_df = df['content']\n",
+        "\n",
+        "okt = Okt()\n",
+        "\n",
+        "reply_list = []\n",
+        "for temp in tqdm(reply_df):\n",
+        "    words = okt.nouns(temp)\n",
+        "    w_list = []\n",
+        "    for word in words:\n",
+        "        if len(word) > 1:\n",
+        "            w_list.append(word)\n",
+        "\n",
+        "    reply_list.append(w_list)\n",
+        "\n",
+        "reply_list"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for temp in tqdm(cont_df):\n",
+        "    words = okt.nouns(temp)\n",
+        "    w_list = []\n",
+        "    for word in words:\n",
+        "        if len(word) > 1:\n",
+        "            w_list.append(word)\n",
+        "\n",
+        "    reply_list.append(w_list)\n",
+        "\n",
+        "reply_list"
+      ],
+      "metadata": {
+        "id": "FYlZ3pU5AXjT"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "okt=Okt()\n",
+        "#okt.pos(df.iloc[0]['text'])\n",
+        "\n",
+        "def tokenize_text(text):\n",
+        "  if not isinstance(text, str):  # 문자열이 아니라면 문자열로 변환\n",
+        "    text = str(text)\n",
+        "  text=re.sub(r'[^ㄱ-ㅣ가-힣\\s]','',text)\n",
+        "\n",
+        "  okt_morphs=okt.pos(text)\n",
+        "\n",
+        "  words = []\n",
+        "  for word,pos in okt_morphs:\n",
+        "    if pos in['Adjective','Verb','Noun']:\n",
+        "      words.append(word)\n",
+        "  word_str=' '.join(words)\n",
+        "  return word_str\n",
+        "\n",
+        "token_list=[]\n",
+        "\n",
+        "for temp in tqdm(reply_df):\n",
+        "  token_list.append(tokenize_text(temp))\n",
+        "\n",
+        "  token_list\n",
+        "\n",
+        "  corpus_list = []\n",
+        "\n",
+        "for index in range(len(token_list)):\n",
+        "    corpus = token_list[index]\n",
+        "    if len(set(corpus.split())) < 3:\n",
+        "        corpus_list.append(corpus)\n",
+        "\n",
+        "for corpus in corpus_list:\n",
+        "    if corpus in token_list:\n",
+        "        token_list.remove(corpus)\n",
+        "\n",
+        "token_list"
+      ],
+      "metadata": {
+        "id": "FKJ04h1BAlhS"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.feature_extraction.text import CountVectorizer\n",
+        "from sklearn.decomposition import LatentDirichletAllocation\n",
+        "\n",
+        "count_vectorizer = CountVectorizer(max_df=0.1,max_features=1000, min_df=2, ngram_range=(1,2))\n",
+        "\n",
+        "feat_vect = count_vectorizer.fit_transform(token_list)\n",
+        "feat_vect.shape"
+      ],
+      "metadata": {
+        "id": "WuZaL2J_Aubt"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "lda = LatentDirichletAllocation(n_components=3)\n",
+        "lda.fit(feat_vect)"
+      ],
+      "metadata": {
+        "id": "_Xr1IsgbAzgl"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def display_topic(model, feature_name, num_top_words):\n",
+        "  for topic_index, topic in enumerate(model.components_):\n",
+        "    print('Topic',topic_index+1)\n",
+        "    topic_word_indexes = topic.argsort()[::-1]\n",
+        "    top_index = topic_word_indexes[0:num_top_words]\n",
+        "    print(top_index)\n",
+        "    feature_concat = [feature_name[i] for i in top_index]\n",
+        "    print(feature_concat)"
+      ],
+      "metadata": {
+        "id": "prm1ZCKHA1LL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "feature_name=count_vectorizer.get_feature_names_out()\n",
+        "display_topic(lda, feature_name, 10)\n",
+        "\n",
+        "pyLDAvis.enable_notebook()\n",
+        "vis = pyLDAvis.lda_model.prepare(lda,feat_vect,count_vectorizer)\n",
+        "pyLDAvis.display(vis)"
+      ],
+      "metadata": {
+        "id": "HwJWyS5CA6Az"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
