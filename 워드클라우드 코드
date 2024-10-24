@@ -1,0 +1,85 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "toc_visible": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 패키지"
+      ],
+      "metadata": {
+        "id": "2ntkX0Nz8CX6"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "-B2GKa1A6ZEC"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install konlpy\n",
+        "!pip install wordcloud pillow\n",
+        "\n",
+        "from wordcloud import WordCloud\n",
+        "import matplotlib.pyplot as plt\n",
+        "from PIL import Image\n",
+        "import numpy as np\n",
+        "\n",
+        "# NanumGothicBold.ttf\n",
+        "# usan1.png"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 워드클라우드\n"
+      ],
+      "metadata": {
+        "id": "l8BaskD28UqA"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 마스크 이미지를 배열로 변환\n",
+        "mask_image = mask_image = np.array(Image.open('usan1.png').convert(\"RGB\"))\n",
+        "\n",
+        "# 워드 클라우드 생성\n",
+        "wordcloud = WordCloud(\n",
+        "    font_path='NanumGothicBold.ttf',  # 폰트 경로\n",
+        "    background_color='white',  # 배경색\n",
+        "    width=800, height=800,\n",
+        "    mask=mask_image,  # 마스크 이미지 사용\n",
+        "    max_font_size=100\n",
+        "    # colormap='gist_heat',\n",
+        ").generate_from_frequencies(dict(dublog_okt)) # publog_kkam\n",
+        "\n",
+        "# 워드 클라우드 시각화\n",
+        "plt.figure(figsize=(10, 8))\n",
+        "plt.imshow(wordcloud, interpolation='bilinear')\n",
+        "plt.axis('off')  # 축 제거\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "mUwxTJsR8Ype"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
