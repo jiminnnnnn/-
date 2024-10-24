@@ -1,0 +1,203 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "toc_visible": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 패키지"
+      ],
+      "metadata": {
+        "id": "mQiuWSDekae9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "DdjdVtUvkWuI"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install tqdm\n",
+        "!pip install konlpy"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import requests\n",
+        "from bs4 import BeautifulSoup as bs\n",
+        "from tqdm import tqdm\n",
+        "import os\n",
+        "import sys\n",
+        "import urllib.request\n",
+        "import json"
+      ],
+      "metadata": {
+        "id": "naJM91LTkegr"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 블로그 데이터"
+      ],
+      "metadata": {
+        "id": "8JTdwXI3kjtH"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def naver_search(sdata):\n",
+        "  client_id = \"FCh4OfftDC5IroX1zpNv\"\n",
+        "  client_secret = \"m2PJX6ySOw\"\n",
+        "  encText = urllib.parse.quote(sdata)\n",
+        "\n",
+        "  link_list = []\n",
+        "  title_list = []\n",
+        "\n",
+        "  for num in range(1, 1000, 100):\n",
+        "    url = f\"https://openapi.naver.com/v1/search/blog?query=\" + encText + f'&display=100&start={num}&sort=sim'\n",
+        "    request = urllib.request.Request(url)\n",
+        "    request.add_header(\"X-Naver-Client-Id\", client_id)\n",
+        "    request.add_header(\"X-Naver-Client-Secret\", client_secret)\n",
+        "    response = urllib.request.urlopen(request)\n",
+        "    rescode = response.getcode()\n",
+        "    if(rescode == 200):\n",
+        "        response_body = response.read()\n",
+        "        blogdata = json.loads(response_body)\n",
+        "\n",
+        "        for blog_temp in blogdata['items']:\n",
+        "          link = blog_temp['link'].replace('https://blog', 'https://m.blog')\n",
+        "          title = blog_temp['title']\n",
+        "          link_list.append(link)\n",
+        "          title_list.append(title)\n",
+        "    else:\n",
+        "        print(\"Error Code:\" + rescode)\n",
+        "\n",
+        "  df = pd.DataFrame({'제목': title_list, '주소': link_list})\n",
+        "\n",
+        "  blog_text_list = []\n",
+        "  for temp in tqdm(df['주소']):\n",
+        "    try:\n",
+        "      html = requests.get(temp)\n",
+        "      soup = bs(html.text, 'html.parser')\n",
+        "      result = soup.find_all('span', class_='se-fs-') # 이 부분에서 필요한 클래스명을 지정합니다.\n",
+        "      blog_text = ''\n",
+        "      for item in result:\n",
+        "        text = item.text.strip()+' '\n",
+        "        blog_text += text\n",
+        "\n",
+        "      blog_text_list.append(blog_text)\n",
+        "\n",
+        "    except:\n",
+        "      blog_text_list.append('')\n",
+        "      print('Error')\n",
+        "\n",
+        "  df['내용'] = blog_text_list\n",
+        "\n",
+        "  df.to_csv(f'{sdata}_블로그.csv', encoding='utf-8-sig', index=False)\n",
+        "\n",
+        "  return df\n",
+        "\n",
+        "# 사용자로부터 검색 키워드를 입력 받습니다.\n",
+        "search_keyword = input(\"검색할 키워드를 입력하세요: \")\n",
+        "\n",
+        "# 입력 받은 키워드로 검색합니다.\n",
+        "naver_search(search_keyword)"
+      ],
+      "metadata": {
+        "id": "FAXf1Ya6kjWT"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 뉴스 데이터"
+      ],
+      "metadata": {
+        "id": "n0668RZMklD9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def naver_news_search(query, start):\n",
+        "    client_id = \"FCh4OfftDC5IroX1zpNv\"\n",
+        "    client_secret = \"m2PJX6ySOw\"\n",
+        "    encText = urllib.parse.quote(query)\n",
+        "    # sort 파라미터를 'sim'으로 설정하여 관련도순으로 결과를 가져옵니다.\n",
+        "    url = f\"https://openapi.naver.com/v1/search/news.json?query={encText}&display=100&start={start}&sort=sim\"\n",
+        "\n",
+        "    request = urllib.request.Request(url)\n",
+        "    request.add_header(\"X-Naver-Client-Id\", client_id)\n",
+        "    request.add_header(\"X-Naver-Client-Secret\", client_secret)\n",
+        "\n",
+        "    response = urllib.request.urlopen(request)\n",
+        "    rescode = response.getcode()\n",
+        "\n",
+        "    if rescode == 200:\n",
+        "        response_body = response.read().decode('utf-8')\n",
+        "        return response_body\n",
+        "    else:\n",
+        "        print(\"Error Code:\", rescode)\n",
+        "        return None\n",
+        "\n",
+        "def parse_news_response(response):\n",
+        "    # JSON 응답을 파이썬 객체로 변환\n",
+        "    response_json = json.loads(response)\n",
+        "    # 'items' 키에 해당하는 뉴스 목록 반환\n",
+        "    return response_json.get('items', [])\n",
+        "\n",
+        "def main():\n",
+        "    query = input(\"검색어를 입력하세요: \")\n",
+        "    all_search_results = []\n",
+        "\n",
+        "    for start in tqdm(range(1, 1001, 100)):\n",
+        "        response = naver_news_search(query, start=start)\n",
+        "\n",
+        "        if response:\n",
+        "            news_list = parse_news_response(response)\n",
+        "            # 검색어 대신 뉴스 제목, 주소, 내용만 저장\n",
+        "            search_results = [{'제목': news['title'], '주소': news['link'], '내용': news['description']} for news in news_list]\n",
+        "            all_search_results.extend(search_results)\n",
+        "\n",
+        "    if all_search_results:\n",
+        "        df = pd.DataFrame(all_search_results)\n",
+        "        file_name = f\"{query}_뉴스.csv\"\n",
+        "        df.to_csv(file_name, encoding='utf-8-sig', index=False)\n",
+        "        print(f\"검색 결과가 {file_name} 파일로 저장되었습니다.\")\n",
+        "    else:\n",
+        "        print(\"검색 결과가 없습니다.\")\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    main()"
+      ],
+      "metadata": {
+        "id": "lgYrkNinkmbK"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
