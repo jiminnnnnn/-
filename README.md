@@ -28,14 +28,14 @@ Here are some ideas to get you started:
 		개발기간 : 2024.04.02 ~ 04.14
 		핵심역할 : 자연어 처리, 자료조사, 셀레니움을 활용한 데이터 수집
 			스킬 : Python, 자연어 처리, selenium
-	https://www.notion.so/be6863e600af4dab8491a1a9cf98c165#26
+	https://www.notion.so/be6863e600af4dab8491a1a9cf98c165
 
 ## ⚡전동킥보드
 	공공 데이터를 활용한 데이터 분석
 		개발기간 : 2024.04.30 ~ 05.29
 		핵심 역할 : 자료조사, 셀레니움을 활용한 데이터 수집, 지도 api를 활용한 데이터 수집
 			스킬 : selenium, api 활용, 자연어처리, 워드 클라우드
-    	https://www.notion.so/ffe491076073455da1f55005fcff1864
+   	https://www.notion.so/ffe491076073455da1f55005fcff1864
 
 ## ⚡닉네임 생성기
 	얼굴 사진을 학습해 닉네임 생성기
