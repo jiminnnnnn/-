@@ -1,0 +1,406 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "!pip install koreanize-matplotlib\n",
+        "import koreanize_matplotlib\n",
+        "from sklearn.linear_model import LinearRegression\n",
+        "import pandas as pd"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "GkYzV1tBkuyZ",
+        "outputId": "b24077ea-9027-4337-b528-5abe0aaab8ad"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Collecting koreanize-matplotlib\n",
+            "  Downloading koreanize_matplotlib-0.1.1-py3-none-any.whl (7.9 MB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m7.9/7.9 MB\u001b[0m \u001b[31m22.1 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hRequirement already satisfied: matplotlib in /usr/local/lib/python3.10/dist-packages (from koreanize-matplotlib) (3.7.1)\n",
+            "Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (1.2.1)\n",
+            "Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (0.12.1)\n",
+            "Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (4.51.0)\n",
+            "Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (1.4.5)\n",
+            "Requirement already satisfied: numpy>=1.20 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (1.25.2)\n",
+            "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (24.0)\n",
+            "Requirement already satisfied: pillow>=6.2.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (9.4.0)\n",
+            "Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (3.1.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.10/dist-packages (from matplotlib->koreanize-matplotlib) (2.8.2)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil>=2.7->matplotlib->koreanize-matplotlib) (1.16.0)\n",
+            "Installing collected packages: koreanize-matplotlib\n",
+            "Successfully installed koreanize-matplotlib-0.1.1\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "hp_data = pd.read_csv('서울 홈플러스 익스프레스 좌표.csv')\n",
+        "\n",
+        "hp_data_lat = []\n",
+        "for temp in hp_data['좌표']:\n",
+        "  try:\n",
+        "    hp_lat = temp.split(',')[0].split(': ')[1].replace(\"'\",'')\n",
+        "    print(hp_lat)\n",
+        "    hp_data_lat.append(hp_lat)\n",
+        "  except:\n",
+        "    hp_data_lat.append(0)\n",
+        "\n",
+        "hp_data_lng = []\n",
+        "for temp in hp_data['좌표']:\n",
+        "  try:\n",
+        "    hp_lng = temp.split(',')[1].split(': ')[1].replace(\"'\",'').replace('}','')\n",
+        "    print(hp_lng)\n",
+        "    hp_data_lng.append(hp_lng)\n",
+        "  except:\n",
+        "    hp_data_lng.append(0)\n",
+        "\n",
+        "hp_data['위도'] = hp_data_lat\n",
+        "hp_data['경도'] = hp_data_lng"
+      ],
+      "metadata": {
+        "id": "_wR3bKebBf7P"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "hp_data.to_csv('서울 홈플러스 익스프레스 좌표2.csv', index=False, encoding='utf-8')"
+      ],
+      "metadata": {
+        "id": "K-OT2sdmrKBL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "gs_data = pd.read_csv('서울 GS25 좌표.csv')\n",
+        "\n",
+        "gs_data_lat = []\n",
+        "for temp in gs_data['좌표']:\n",
+        "  try:\n",
+        "    gs_lat = temp.split(',')[0].split(': ')[1].replace(\"'\",'')\n",
+        "    print(gs_lat)\n",
+        "    gs_data_lat.append(gs_lat)\n",
+        "  except:\n",
+        "    gs_data_lat.append(0)\n",
+        "\n",
+        "gs_data_lng = []\n",
+        "for temp in gs_data['좌표']:\n",
+        "  try:\n",
+        "    gs_lng = temp.split(',')[1].split(': ')[1].replace(\"'\",'').replace('}','')\n",
+        "    print(gs_lng)\n",
+        "    gs_data_lng.append(gs_lng)\n",
+        "  except:\n",
+        "    gs_data_lng.append(0)\n",
+        "\n",
+        "gs_data['위도'] = gs_data_lat\n",
+        "gs_data['경도'] = gs_data_lng"
+      ],
+      "metadata": {
+        "id": "eyKySWoutAbe"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "gs_data.to_csv('서울 GS25 좌표2.csv', index=False, encoding='utf-8')"
+      ],
+      "metadata": {
+        "id": "QDSPio_3uLWX"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#점찍기 테스트\n",
+        "\n",
+        "import geopandas as gpd\n",
+        "from shapely.geometry import Point\n",
+        "\n",
+        "# Load Seoul neighborhoods map data\n",
+        "seoul_map = gpd.read_file('seoul_neighborhoods_geo.json')\n",
+        "\n",
+        "# Sample latitude and longitude data\n",
+        "data = {\n",
+        "    'latitude': [37.5665, 37.5658, 37.5761, 37.5511],\n",
+        "    'longitude': [126.9780, 126.9380, 126.9864, 126.9860]\n",
+        "}\n",
+        "data = pd.DataFrame(data)\n",
+        "print(data)\n",
+        "\n",
+        "# Convert latitude and longitude to Point objects\n",
+        "geometry = [Point(xy) for xy in zip(data['longitude'], data['latitude'])]\n",
+        "print(geometry)\n",
+        "# Create GeoDataFrame with Point objects\n",
+        "points_gdf = gpd.GeoDataFrame(data, geometry=geometry, crs=seoul_map.crs)\n",
+        "print(points_gdf)\n",
+        "# Plot the map with neighborhoods and points\n",
+        "ax = seoul_map.plot(figsize=(10, 10), alpha=0.5)\n",
+        "points_gdf.plot(ax=ax, color='red', markersize=50)"
+      ],
+      "metadata": {
+        "id": "qgwHN3X6BIpg"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import geopandas as gpd\n",
+        "from shapely.geometry import Point\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "# Load Seoul neighborhoods map data\n",
+        "seoul_map = gpd.read_file('seoul_neighborhoods_geo.json')\n",
+        "\n",
+        "# Sample latitude and longitude data\n",
+        "data1 = pd.read_csv('서울 GS25 좌표2.csv')\n",
+        "data1 = data1[(data1['위도'] != 0) & (data1['경도'] != 0)]\n",
+        "data = data1[['위도', '경도']]\n",
+        "print(data.describe())\n",
+        "# Convert latitude and longitude to Point objects\n",
+        "geometry = [Point(xy) for xy in zip(data['경도'], data['위도'])]\n",
+        "\n",
+        "# Create GeoDataFrame with Point objects\n",
+        "points_gdf = gpd.GeoDataFrame(data, geometry=geometry, crs=seoul_map.crs)\n",
+        "\n",
+        "# Create a subplot without setting aspect ratio\n",
+        "fig, ax = plt.subplots(figsize=(15, 15))\n",
+        "ax.set_facecolor('white')\n",
+        "# Plot the map with neighborhoods\n",
+        "seoul_map.plot(ax=ax, color='#adb5bd', alpha=0.5)\n",
+        "\n",
+        "# Plot points\n",
+        "points_gdf.plot(ax=ax, color='#0072BC', markersize=5)\n",
+        "\n",
+        "# Show the plot\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "dk6ebB26m96Z"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import geopandas as gpd\n",
+        "from shapely.geometry import Point\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "# Load Seoul neighborhoods map data\n",
+        "seoul_map = gpd.read_file('seoul_neighborhoods_geo.json')\n",
+        "\n",
+        "# Sample latitude and longitude data\n",
+        "data1 = pd.read_csv('서울 홈플러스 익스프레스 좌표2.csv')\n",
+        "data1 = data1[(data1['위도'] != 0) & (data1['경도'] != 0)]\n",
+        "data = data1[['위도', '경도']]\n",
+        "print(data.describe())\n",
+        "# Convert latitude and longitude to Point objects\n",
+        "geometry = [Point(xy) for xy in zip(data['경도'], data['위도'])]\n",
+        "\n",
+        "# Create GeoDataFrame with Point objects\n",
+        "points_gdf = gpd.GeoDataFrame(data, geometry=geometry, crs=seoul_map.crs)\n",
+        "\n",
+        "# Create a subplot without setting aspect ratio\n",
+        "fig, ax = plt.subplots(figsize=(15, 15))\n",
+        "ax.set_facecolor('white')\n",
+        "# Plot the map with neighborhoods\n",
+        "seoul_map.plot(ax=ax, color='#adb5bd', alpha=0.5)\n",
+        "\n",
+        "# Plot points\n",
+        "points_gdf.plot(ax=ax, color='red', markersize=20)\n",
+        "\n",
+        "# Show the plot\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "izhs1aq8oazf"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#실제 거리 구하기\n",
+        "\n",
+        "from math import radians, sin, cos, sqrt, atan2\n",
+        "\n",
+        "def calculate_distance(lat, lon, average_distance):\n",
+        "    # 지구의 반지름 (단위: km)\n",
+        "    R = 6371.0\n",
+        "\n",
+        "    # 위도와 경도를 라디안 단위로 변환\n",
+        "    lat = radians(lat)\n",
+        "    lon = radians(lon)\n",
+        "\n",
+        "    # 위도의 변화량을 실제 거리 단위로 변환\n",
+        "    lat_distance = average_distance / 111.32\n",
+        "\n",
+        "    # 경도의 변화량을 실제 거리 단위로 변환\n",
+        "    lon_distance = average_distance / (111.32 * cos(lat))\n",
+        "\n",
+        "    # 새로운 위도, 경도 계산\n",
+        "    new_lat = lat + lat_distance\n",
+        "    new_lon = lon + lon_distance\n",
+        "\n",
+        "    # 새로운 위도, 경도로부터 실제 거리 계산\n",
+        "    lat1, lon1, lat2, lon2 = lat, lon, new_lat, new_lon\n",
+        "    dlon = lon2 - lon1\n",
+        "    dlat = lat2 - lat1\n",
+        "    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2\n",
+        "    c = 2 * atan2(sqrt(a), sqrt(1 - a))\n",
+        "    distance = R * c\n",
+        "\n",
+        "    return distance"
+      ],
+      "metadata": {
+        "id": "fIm_FVXKB3jw"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.neighbors import NearestNeighbors\n",
+        "import numpy as np\n",
+        "from scipy.spatial.distance import cdist\n",
+        "\n",
+        "# 데이터를 NumPy 배열로 변환\n",
+        "data1 = pd.read_csv('서울 GS25 좌표2.csv')\n",
+        "data1 = data1[(data1['위도'] != 0) & (data1['경도'] != 0)]\n",
+        "data = data1[['위도', '경도']]\n",
+        "points = np.array(data[['위도', '경도']])\n",
+        "# 각 좌표 쌍 간의 거리 계산\n",
+        "distances = cdist(points, points)\n",
+        "\n",
+        "# 자기 자신과의 거리를 무한대로 설정하여 가장 가까운 이웃의 인덱스를 찾음\n",
+        "np.fill_diagonal(distances, np.inf)\n",
+        "\n",
+        "# 가장 가까운 이웃의 인덱스 찾기\n",
+        "nearest_neighbors_indices = np.argmin(distances, axis=1)\n",
+        "\n",
+        "# 가장 가까운 이웃의 거리 가져오기\n",
+        "nearest_distances = distances[np.arange(len(distances)), nearest_neighbors_indices]\n",
+        "\n",
+        "# 평균 거리 계산\n",
+        "average_distance = np.mean(nearest_distances)\n",
+        "print(\"평균 거리:\", average_distance)\n",
+        "\n",
+        "#GS25\n",
+        "\n",
+        "real_distance = calculate_distance(37.566381, 126.977717, average_distance)\n",
+        "\n",
+        "print(\"실제 지구에서의 거리:\", real_distance, \"km\")"
+      ],
+      "metadata": {
+        "id": "TpCxc_gureHx",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "4e9a255e-85c4-42b1-f99b-d41c9061fe80"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "평균 거리: 0.001973162861308331\n",
+            "실제 지구에서의 거리: 0.15970218482417178 km\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.neighbors import NearestNeighbors\n",
+        "import numpy as np\n",
+        "\n",
+        "# 데이터를 NumPy 배열로 변환\n",
+        "data1 = pd.read_csv('서울 홈플러스 익스프레스 좌표2.csv')\n",
+        "data1 = data1[(data1['위도'] != 0) & (data1['경도'] != 0)]\n",
+        "data = data1[['위도', '경도']]\n",
+        "points = np.array(data[['위도', '경도']])\n",
+        "# 각 좌표 쌍 간의 거리 계산\n",
+        "distances = cdist(points, points)\n",
+        "\n",
+        "# 자기 자신과의 거리를 무한대로 설정하여 가장 가까운 이웃의 인덱스를 찾음\n",
+        "np.fill_diagonal(distances, np.inf)\n",
+        "\n",
+        "# 가장 가까운 이웃의 인덱스 찾기\n",
+        "nearest_neighbors_indices = np.argmin(distances, axis=1)\n",
+        "\n",
+        "# 가장 가까운 이웃의 거리 가져오기\n",
+        "nearest_distances = distances[np.arange(len(distances)), nearest_neighbors_indices]\n",
+        "\n",
+        "# 평균 거리 계산\n",
+        "average_distance = np.mean(nearest_distances)\n",
+        "print(\"평균 거리:\", average_distance)\n",
+        "\n",
+        "#홈플러스\n",
+        "real_distance = calculate_distance(37.566381, 126.977717, average_distance) # 서울 시청 좌표 : 37.566381, 126.977717\n",
+        "\n",
+        "print(\"실제 지구에서의 거리:\", real_distance, \"km\")"
+      ],
+      "metadata": {
+        "id": "Tw_IeyFcrQWJ",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "9bf580db-48b3-4cfe-9b4e-3b254694b8ed"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "평균 거리: 0.012887191135082153\n",
+            "실제 지구에서의 거리: 1.0430328974218486 km\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
