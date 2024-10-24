@@ -1,0 +1,113 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from bs4 import BeautifulSoup
+import csv
+import time
+import pyperclip
+
+collected_data = []
+
+# Selenium 
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_experimental_option('detach', True)
+# driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+# driver.maximize_window()
+chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
+driver = webdriver.Chrome(options=chrome_options)
+driver.maximize_window()
+
+driver.get('http://naver.com')
+time.sleep(3)
+driver.find_element(By.CLASS_NAME, 'MyView-module__link_login___HpHMW').click()
+time.sleep(5)
+
+naverid = ''
+naverpw = ''
+search_keyword = ''
+
+driver.find_element(By.ID, 'id').click()
+pyperclip.copy(naverid)
+driver.find_element(By.ID, 'id').send_keys(Keys.CONTROL, 'v')
+time.sleep(3)
+
+driver.find_element(By.ID, 'pw').click()
+pyperclip.copy(naverpw)
+driver.find_element(By.ID, 'pw').send_keys(Keys.CONTROL, 'v')
+time.sleep(2)
+
+driver.find_element(By.CLASS_NAME, 'btn_login').click()
+time.sleep(4)
+
+skip_keywords = ['']
+
+
+try:
+    for page_num in range(1, 13):
+        url = f"https://cafe.naver.com/ArticleSearchList.nhn?search.clubid=10094499&search.media=0&search.searchdate=all&userDisplay=15&search.option=0&search.sortBy=date&search.searchBy=0&search.query=%C6%ED%C0%C7%C1%A1+%BF%EC%BB%EA&search.viewtype=title&search.page={page_num}"
+        # url = f"https://cafe.naver.com/ArticleSearchList.nhn?search.clubid=10094499&search.media=0&search.searchdate=all&userDisplay=15&search.option=0&search.sortBy=date&search.searchBy=0&search.query=%B4%D9%C0%CC%BC%D2+%BF%EC%BB%EA&search.viewtype=title&search.page={page_num}"
+
+        driver.get(url)
+        time.sleep(10) 
+
+        # iframe
+        driver.switch_to.frame("cafe_main")
+
+
+        posts = driver.find_elements(By.CLASS_NAME, 'article')
+        links = [post.get_attribute('href') for post in posts]
+
+
+        for link in links[2:]:
+            try:
+                driver.get(link)
+                time.sleep(10)
+
+                # iframe
+                driver.switch_to.frame("cafe_main")
+
+
+                post_html = driver.page_source
+                post_soup = BeautifulSoup(post_html, 'html.parser')
+
+       
+                title = post_soup.find('h3', class_='title_text').text
+                content = post_soup.find('div', class_='se-component se-text se-l-default').text
+
+      
+                if any(skip_keyword in title or skip_keyword in content for skip_keyword in skip_keywords):
+                    driver.back()
+                    time.sleep(1)
+                    continue 
+                    
+                comment_elements = post_soup.find_all('span', class_='text_comment')  
+                comments_list = [comment.text.strip() for comment in comment_elements]
+                comments_str = '\n'.join(comments_list)
+
+ 
+                if not comments_list:
+                    driver.back()
+                    time.sleep(1)
+                    continue
+
+
+                collected_data.append([title, content, comments_str])
+
+                driver.back()
+                time.sleep(1)
+            except:
+                print('save error!')
+except:
+    print('error!')
+
+
+driver.quit()
+
+# CSV
+with open('.csv', 'w', newline='', encoding='utf-8-sig') as file:
+    writer = csv.writer(file)
+    writer.writerow(['title', 'content', 'comments'])
+    writer.writerows(collected_data) 
