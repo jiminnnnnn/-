@@ -1,0 +1,100 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from bs4 import BeautifulSoup
+import csv
+import time
+import pyperclip
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_experimental_option('detach',True)
+chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
+driver = webdriver.Chrome(options=chrome_options)
+driver.maximize_window()
+
+# �ㅼ씠踰� 濡쒓렇�� �섏씠吏� �묒냽
+driver.get('http://naver.com')
+time.sleep(3)
+driver.find_element(By.CLASS_NAME, 'MyView-module__link_login___HpHMW').click()
+time.sleep(5)
+
+# �ㅼ씠踰� ID�� 鍮꾨�踰덊샇 �ㅼ젙
+naverid = ''
+naverpw = ''
+
+# 濡쒓렇�� 怨쇱젙
+driver.find_element(By.ID, 'id').click()
+pyperclip.copy(naverid)
+driver.find_element(By.ID, 'id').send_keys(Keys.CONTROL, 'v')
+time.sleep(3)
+
+driver.find_element(By.ID, 'pw').click()
+pyperclip.copy(naverpw)
+driver.find_element(By.ID, 'pw').send_keys(Keys.CONTROL, 'v')
+time.sleep(2)
+
+driver.find_element(By.CLASS_NAME, 'btn_login').click()
+time.sleep(4)
+
+# �섏쭛�� �곗씠�곕� ���ν븷 由ъ뒪��
+collected_data = []
+
+# 嫄대꼫�� �ㅼ썙�� 紐⑸줉
+skip_keywords = ['�� �덉긽��', '�� �곹뭹', '�앸같鍮꾪룷��']
+
+try:
+    for page_num in range(1, 9): # 8�섏씠吏� 源뚯�(9�섏씠吏� 遺��곕뒗 以묎퀬�섎씪 �먮ℓ湲�)
+        url = f"https://section.cafe.naver.com/ca-fe/home/search/articles?q=%ED%8E%B8%EC%9D%98%EC%A0%90%20%EC%B6%A9%EB%8F%99%EA%B5%AC%EB%A7%A4&t=1712557175897&p={page_num}"
+        driver.get(url)
+        time.sleep(9)  # �섏씠吏� 濡쒕뱶 ��湲�
+
+        # 湲� 留곹겕�� 李얘린
+        posts = driver.find_elements(By.CLASS_NAME, 'thumbnail')
+        links = [post.get_attribute('href') for post in posts]
+
+        # 媛� 留곹겕�� ���� �뺣낫 �섏쭛
+        for link in links:
+            try:
+                driver.get(link)
+                time.sleep(9)
+
+                # iframe�쇰줈 �꾪솚
+                driver.switch_to.frame("cafe_main")
+
+                # �꾩옱 �섏씠吏��� HTML 媛��몄삤湲�
+                post_html = driver.page_source
+                post_soup = BeautifulSoup(post_html, 'html.parser')
+
+                # �쒕ぉ, �댁슜
+                title = post_soup.find('h3', class_='title_text').text
+                content = post_soup.find('div', class_='se-module se-module-text').text
+
+                # �쒕ぉ�대굹 �댁슜�� 嫄대꼫�� �ㅼ썙�쒓� �ы븿�섏뼱 �덈뒗吏� �뺤씤
+                if any(skip_keyword in title or skip_keyword in content for skip_keyword in skip_keywords):
+                    driver.back()
+                    time.sleep(1)
+                    continue  # �ㅼ쓬 留곹겕濡� �섏뼱媛�湲�
+
+                # �섏쭛�� �곗씠�� ����
+                collected_data.append([title, content])
+
+                driver.back()
+                time.sleep(1)
+            except:
+                print('save error!')
+except:
+    print('error!')
+
+# �쒕씪�대쾭 醫낅즺
+driver.quit()
+
+# CSV �뚯씪�� �곌린 紐⑤뱶濡� �닿퀬 �곗씠�� ����
+with open('�몄쓽�� 異⑸룞援щℓ_移댄럹.csv', 'w', newline='', encoding='utf-8-sig') as file:
+    writer = csv.writer(file)
+    writer.writerow(['title', 'content']) # CSV �뚯씪 �ㅻ뜑 �묒꽦
+    writer.writerows(collected_data) # �섏쭛�� �곗씠�곕� �뚯씪�� �곌린
+
+
