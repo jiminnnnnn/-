@@ -1,0 +1,38 @@
+import pandas as pd
+from tqdm import tqdm
+import requests
+
+df = pd.read_csv('.csv', encoding='cp949')
+print(df)
+
+
+def get_location(address):
+    url = 'https://dapi.kakao.com/v2/local/search/address.json?query=' + address
+    headers = {"Authorization": "KakaoAK 4261a91294f00a02e9aaa04b309193da"}
+    try:
+        print(f"Processing address: {address}")
+        response = requests.get(url, headers=headers)
+        api_json = response.json()
+        if 'documents' in api_json and api_json['documents']:
+            address_info = api_json['documents'][0]['address']
+            lat = str(address_info['y'])
+            lng = str(address_info['x'])
+            print(f"Latitude: {lat}, Longitude: {lng}")
+            crd = {"lat": lat, "lng": lng}
+            return crd
+        else:
+            print(f"No information found for address: {address}")
+            return None
+    except Exception as e:
+        print(f"An error occurred while processing address {address}: {e}")
+        return None
+
+# �곗씠�고봽�덉엫�� 媛� �됱뿉 ���� 醫뚰몴 媛��몄삤湲�
+tqdm.pandas()
+df['醫뚰몴'] = df['二쇱냼'].progress_apply(get_location)
+
+# 寃곌낵 異쒕젰
+print(df)
+
+# CSV �뚯씪濡� ����
+df.to_csv('.csv', decoding= 'utf-8', index=False)
