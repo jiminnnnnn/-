@@ -1,0 +1,355 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "toc_visible": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 패키지"
+      ],
+      "metadata": {
+        "id": "UgKhihBU1p5J"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 필요한 패키지 설치\n",
+        "!pip install konlpy\n",
+        "!pip install tqdm\n",
+        "\n",
+        "# 패키지 임포트\n",
+        "import re\n",
+        "import pandas as pd\n",
+        "import tqdm\n",
+        "from konlpy.tag import Okt\n",
+        "from konlpy.tag import Kkma\n",
+        "from collections import Counter"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Oefdl0Dq1r55",
+        "outputId": "1b7291c8-32c2-4f89-859b-74c40a136cf8"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: konlpy in /usr/local/lib/python3.10/dist-packages (0.6.0)\n",
+            "Requirement already satisfied: JPype1>=0.7.0 in /usr/local/lib/python3.10/dist-packages (from konlpy) (1.5.0)\n",
+            "Requirement already satisfied: lxml>=4.1.0 in /usr/local/lib/python3.10/dist-packages (from konlpy) (4.9.4)\n",
+            "Requirement already satisfied: numpy>=1.6 in /usr/local/lib/python3.10/dist-packages (from konlpy) (1.25.2)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from JPype1>=0.7.0->konlpy) (24.0)\n",
+            "Requirement already satisfied: tqdm in /usr/local/lib/python3.10/dist-packages (4.66.2)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 빈도수 분석(Okt) : 단어"
+      ],
+      "metadata": {
+        "id": "ZUBNaENE130S"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def noun_verb_adj_keyword_okt(name):\n",
+        "    import re\n",
+        "    import pandas as pd\n",
+        "    from tqdm import tqdm\n",
+        "    from konlpy.tag import Okt\n",
+        "    from collections import Counter\n",
+        "\n",
+        "    okt = Okt()\n",
+        "\n",
+        "    stopwords = {'하다', '있다', '되다', '이다', '돼다', '보다', '가다', '오다', # 조사\n",
+        "                 '을', '를', '이', '가', '은', '는', '에', '에서', '의', '과', '와', '로', '으로', '까지', '처럼', '같이', # 관사\n",
+        "                 '그', '저', '이', '그녀', '그것', '이것', '저것', '여기', '거기', '무엇', '어느', '모든', # 전치사\n",
+        "                 '에게', '에서', '에게서', '과', '와', '의', '에', '에도', '에만', '을 위해', '을 향해', '을 통해', '를 향한', # 접속사\n",
+        "                 '그래서', '그러나', '그리고', '그러므로', '그런데', '그리하여', '그렇지만', '그러니까', # 부사\n",
+        "                 '매우', '매일', '자주', '대부분', '보통', '전혀', '조금', '그래도', '아마', '아예', '이제', '여전히', # 기타\n",
+        "                 '것', '때문', '없다', '많다', '적다', '어떤', '몇', '얼마', '어느', '어디', '누구', '무엇', '이런', '그런',\n",
+        "                 '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열',\n",
+        "                 '우산', '가격', '나오', '아니', '짱구', '일본', '도쿄', '맛있', '보이', '귀엽', '사용', '그리하', '들어가', # 탈락 형태소(관련X) - Kkam\n",
+        "                 '예쁘', '이렇', '그렇', '가능', '좋아하', '그리', '다니', '모르', '버리', '만들', '그러', '드리', '이용', '다르',\n",
+        "                 '마시', '카페', '커피', '맥주' '기다리', '못하', '해보', '아이', '괜찮', '타이', '위하', '시키', '과자', '나가', '도착',\n",
+        "                 '저희', '이거', '이쁘', '가방', '고르', '베이', '비오', '치과', '괴물', '대하', '공제', '펼치', '내가', '따르', '통하'\n",
+        "                 '우리', '사람', '생각', '생기', '제가', '않다', '규어', '같다', '들다', '아니다', '되어다', '나오다', '자다', '해주다',\n",
+        "                 '대회', '다녀오', '시간', '사진', '버스', '내리', '저녁', '니스', '텍스', '들어오', '휘트', '메뉴', '가보', '호텔', '에스',\n",
+        "                 '올리', '헬스', '기다리', '언니', '장도', '번째', '스타', '북구', '오랜만', '끝나', '예약', '이상', '이번', '예정', '주차',\n",
+        "                 '조합원', '피자', '편하', '어울림', '주택', '힘들', '입찰', '기분', '타입', '음식', '조합', '정비', '엄마', '안녕', '공간',\n",
+        "                 '한번', '오늘', '처음', '추천', '어울림', '공간', '시장', '박스', '분위기', '항공권', '시부야',\n",
+        "                 '예쁘다', '귀엽다', '드리다', '쉬다', '찍히다', '들어가다', '어떻다', '해보다', '보이다', '이렇다', '모르다', '위해', # 탈락 형태소(관련X) - Okt\n",
+        "                 '넣다', '써다', '우리', '먹다', '그렇다', '모자', '쓸다', '맛있다', '개구리', '벚꽃', '노란', '초록', '어린이', '공제'\n",
+        "                 '소득공제', '서울', '광주', '수원', '경기', '부산', '여수', '초코', '머그컵', '치즈', '딸기', '라떼', '라면', '달고나', '도시락',\n",
+        "                 '어스', '아이스크림', '샌드위치', '김밥', '젤리', '냉장고', '우유', '롯데', '쓰다', '나다', '보내다', '알다', '차다', '친구',\n",
+        "                 '수도', '분양', '아파트', '사업', '재개발', '건설', '맥주', '선수', '휘트니', '칼텍스', '남다', '구역', '단지', '거리', '산본',\n",
+        "                 '메뉴', '맛집', '점심', '아침', '시키다', '세트', '보고', '오픈', '다니다', '노랗다', '찍다', '맞다', '다른', '정도', '마음', '또한',\n",
+        "                 '마지막', '다시', '제공', '가지', '선물', '우탱클랜', '봄봄', '걸이', '여행', '한국', '대만', '숙소', '오사카', '후쿠오카', '기념품',\n",
+        "                 '건물', '가면', '식당', '영화', '코스', '먹기', '타고', '가게', '혼자', '안되다', '가기', '싶다', '비다', '나가다', '내리다','편의점'}\n",
+        "                 # '다이소' -> 다이소 우산_블로그 분석시 제외\n",
+        "                 # '편의점' -> 편의점 우산_블로그 분석시 제외\n",
+        "\n",
+        "    # CSV 파일 불러오기\n",
+        "    df = pd.read_csv(f'{name}.csv')\n",
+        "\n",
+        "    # 'content' 열에서 텍스트 데이터 추출\n",
+        "    texts = df['내용'].tolist()\n",
+        "\n",
+        "    # 결과를 저장할 리스트\n",
+        "    pos_list = []\n",
+        "\n",
+        "    # 각 텍스트에 대해 반복\n",
+        "    for text in tqdm(texts):\n",
+        "        # 한글만 추출\n",
+        "        clean_text = re.sub(r'[^ㄱ-ㅣ가-힣\\s]', '', str(text))\n",
+        "\n",
+        "        # 형태소 분석\n",
+        "        pos = okt.pos(clean_text, norm=True, stem=True)\n",
+        "\n",
+        "        # 명사, 형용사, 동사만 추출하고 불용어 및 1글자 이하 형태소 제거\n",
+        "        filtered_pos = []\n",
+        "        for word, tag in pos:\n",
+        "            if len(word) > 1 and word not in stopwords and tag in ('Noun', 'Adjective', 'Verb'): # 'Verb'\n",
+        "                if word == \"가성\": # 가성 = 가성비\n",
+        "                    word = \"가성비\"\n",
+        "                if word == \"비싸\": # 비싸 = 비싸다\n",
+        "                    word = \"비싸다\"\n",
+        "                filtered_pos.append(word)\n",
+        "        pos_list.extend(filtered_pos)\n",
+        "\n",
+        "    # 빈도수 계산\n",
+        "    pos_counts = Counter(pos_list)\n",
+        "\n",
+        "    # 상위 100개 단어 추출\n",
+        "    top_100_words = pos_counts.most_common(100)\n",
+        "\n",
+        "    for word, count in top_100_words:\n",
+        "        print(f'{word}: {count}')\n",
+        "\n",
+        "    return top_100_words\n",
+        "\n",
+        "file_path = input(\"파일 이름을 입력하세요 : \")\n",
+        "\n",
+        "noun_verb_adj_keyword_okt(file_path)"
+      ],
+      "metadata": {
+        "id": "-uyH6JaY14kW"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 빈도수 분석(Kkam) : 단어"
+      ],
+      "metadata": {
+        "id": "Kz0Y5h8A3Fhq"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def noun_verb_adj_keyword_kkam(name):\n",
+        "    import re\n",
+        "    import pandas as pd\n",
+        "    from tqdm import tqdm\n",
+        "    from konlpy.tag import Kkma\n",
+        "    from collections import Counter\n",
+        "\n",
+        "    kkma = Kkma()\n",
+        "\n",
+        "    df = pd.read_csv(f'{name}.csv')\n",
+        "\n",
+        "    stopwords = {'하다', '있다', '되다', '이다', '돼다', '보다', '가다', '오다', # 조사\n",
+        "                 '을', '를', '이', '가', '은', '는', '에', '에서', '의', '과', '와', '로', '으로', '까지', '처럼', '같이', # 관사\n",
+        "                 '그', '저', '이', '그녀', '그것', '이것', '저것', '여기', '거기', '무엇', '어느', '모든', # 전치사\n",
+        "                 '에게', '에서', '에게서', '과', '와', '의', '에', '에도', '에만', '을 위해', '을 향해', '을 통해', '를 향한', # 접속사\n",
+        "                 '그래서', '그러나', '그리고', '그러므로', '그런데', '그리하여', '그렇지만', '그러니까', # 부사\n",
+        "                 '매우', '매일', '자주', '대부분', '보통', '전혀', '조금', '그래도', '아마', '아예', '이제', '여전히', # 기타\n",
+        "                 '것', '때문', '없다', '많다', '적다', '어떤', '몇', '얼마', '어느', '어디', '누구', '무엇', '이런', '그런',\n",
+        "                 '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열',\n",
+        "                 '우산', '가격', '나오', '아니', '짱구', '일본', '도쿄', '맛있', '보이', '귀엽', '사용', '그리하', '들어가', # 탈락 형태소(관련X) - Kkam\n",
+        "                 '예쁘', '이렇', '그렇', '가능', '좋아하', '그리', '다니', '모르', '버리', '만들', '그러', '드리', '이용', '다르',\n",
+        "                 '마시', '카페', '커피', '맥주' '기다리', '못하', '해보', '아이', '괜찮', '타이', '위하', '시키', '과자', '나가', '도착',\n",
+        "                 '저희', '이거', '이쁘', '가방', '고르', '베이', '비오', '치과', '괴물', '대하', '공제', '펼치', '내가', '따르', '통하'\n",
+        "                 '우리', '사람', '생각', '생기', '제가', '않다', '규어', '같다', '들다', '아니다', '되어다', '나오다', '자다', '해주다',\n",
+        "                 '대회', '다녀오', '시간', '사진', '버스', '내리', '저녁', '니스', '텍스', '들어오', '휘트', '메뉴', '가보', '호텔', '에스',\n",
+        "                 '올리', '헬스', '기다리', '언니', '장도', '번째', '스타', '북구', '오랜만', '끝나', '예약', '이상', '이번', '예정', '주차',\n",
+        "                 '조합원', '피자', '편하', '어울림', '주택', '힘들', '입찰', '기분', '타입', '음식', '조합', '정비', '엄마', '안녕', '공간',\n",
+        "                 '한번', '오늘', '처음', '추천', '어울림', '공간', '시장', '박스', '분위기', '항공권', '시부야',\n",
+        "                 '예쁘다', '귀엽다', '드리다', '쉬다', '찍히다', '들어가다', '어떻다', '해보다', '보이다', '이렇다', '모르다', '위해', # 탈락 형태소(관련X) - Okt\n",
+        "                 '넣다', '써다', '우리', '먹다', '그렇다', '모자', '쓸다', '맛있다', '개구리', '벚꽃', '노란', '초록', '어린이', '공제'\n",
+        "                 '소득공제', '서울', '광주', '수원', '경기', '부산', '여수', '초코', '머그컵', '치즈', '딸기', '라떼', '라면', '달고나', '도시락',\n",
+        "                 '어스', '아이스크림', '샌드위치', '김밥', '젤리', '냉장고', '우유', '롯데', '쓰다', '나다', '보내다', '알다', '차다', '친구',\n",
+        "                 '수도', '분양', '아파트', '사업', '재개발', '건설', '맥주', '선수', '휘트니', '칼텍스', '남다', '구역', '단지', '거리', '산본',\n",
+        "                 '메뉴', '맛집', '점심', '아침', '시키다', '세트', '보고', '오픈', '다니다', '노랗다', '찍다', '맞다', '다른', '정도', '마음', '또한',\n",
+        "                 '마지막', '다시', '제공', '가지', '선물', '우탱클랜', '봄봄', '걸이', '여행', '한국', '대만', '숙소', '오사카', '후쿠오카', '기념품',\n",
+        "                 '건물', '가면', '식당', '영화', '코스', '먹기', '타고', '가게', '혼자', '안되다', '가기', '싶다', '비다', '나가다', '내리다', '다이소'}\n",
+        "                 # '다이소' -> 다이소 우산_블로그 분석시 제외\n",
+        "                 # '편의점' -> 편의점 우산_블로그 분석시 제외\n",
+        "\n",
+        "    # 각 텍스트에 대해 반복\n",
+        "    morphs_list = []\n",
+        "    for text in tqdm(df['내용'].tolist()):\n",
+        "        # 한글만 추출\n",
+        "        cleaned_text = re.sub(r\"[^ㄱ-ㅣ가-힣\\s]\", \"\", str(text))\n",
+        "        try: # 형태소 분석\n",
+        "            morphs = [word for word, tag in kkma.pos(cleaned_text) if tag.startswith('N') or tag.startswith('VA') or tag.startswith('V')] # or tag.startswith('V')\n",
+        "            # '비싼', '비싸다'를 '비싸'로 변환\n",
+        "            morphs = [morph if morph not in ['비싼', '비싸'] else '비싸다' for morph in morphs]\n",
+        "            morphs = [morph for morph in morphs if morph not in stopwords and len(morph) > 1]  # 불용어 제거 및 1글자 이하 형태소 제외\n",
+        "            morphs_list.extend(morphs)\n",
+        "        except Exception as e:\n",
+        "            print(f\"Error processing text: {text}\")\n",
+        "            print(e)\n",
+        "\n",
+        "    # 각 형태소의 빈도수 계산\n",
+        "    morph_counts = Counter(morphs_list)\n",
+        "\n",
+        "    # '다이'가 '다이소'로 잘못 분리되었는지 확인 및 보정하는 로직\n",
+        "    if '다이' in morph_counts:\n",
+        "    # '다이소'가 이미 존재하는 경우, '다이'의 빈도수를 '다이소'에 추가\n",
+        "      if '다이소' in morph_counts:\n",
+        "        morph_counts['다이소'] += morph_counts['다이']\n",
+        "      else:\n",
+        "        # '다이소'가 존재하지 않는 경우, '다이'의 빈도수를 '다이소'로 이동\n",
+        "        morph_counts['다이소'] = morph_counts['다이']\n",
+        "      # 기존 '다이' 키 삭제\n",
+        "      del morph_counts['다이']\n",
+        "\n",
+        "    # 빈도수가 높은 상위 100개 형태소 정리\n",
+        "    sorted_morphs = [(morph, count) for morph, count in morph_counts.most_common(100)]\n",
+        "\n",
+        "    print(sorted_morphs)\n",
+        "\n",
+        "    return sorted_morphs\n",
+        "\n",
+        "file_path = input(\"파일 이름을 입력하세요 : \")\n",
+        "\n",
+        "noun_verb_adj_keyword_kkam(file_path)"
+      ],
+      "metadata": {
+        "id": "qUlbSm0H3aQB"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 빈도수 분석(형태소 분석기 이용X)"
+      ],
+      "metadata": {
+        "id": "YfcoX4XBIsNO"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import re\n",
+        "from collections import Counter\n",
+        "\n",
+        "def count_korean_words_frequency(df, column_name):\n",
+        "    \"\"\"\n",
+        "    데이터프레임의 지정된 열에서 한글 단어의 출현 빈도수를 계산합니다.\n",
+        "    줄바꿈, 탭 등의 공백 문자도 제거합니다.\n",
+        "\n",
+        "    :param df: 분석할 데이터프레임입니다.\n",
+        "    :param column_name: 분석할 데이터프레임의 열 이름입니다.\n",
+        "    \"\"\"\n",
+        "    # 지정된 열의 모든 행에서 한글만 추출하여 리스트로 만듭니다.\n",
+        "    korean_words = []\n",
+        "    for content in df[column_name]:\n",
+        "        # 정규표현식을 사용하여 한글 단어만 추출하고, 공백, 줄바꿈, 탭 등을 제거\n",
+        "        words = re.findall(\"[가-힣]+\", str(content).replace(\"\\n\", \" \").replace(\"\\t\", \" \"))\n",
+        "        korean_words.extend(words)\n",
+        "\n",
+        "    # 한 글자 단어와 불용어를 제외하고 단어들의 출현 빈도수를 계산\n",
+        "    filtered_words = [word for word in korean_words if len(word) > 1 and word not in stopwords]\n",
+        "    word_counts = Counter(filtered_words)\n",
+        "\n",
+        "    # 출현 빈도수가 높은 순으로 단어와 빈도수 출력\n",
+        "    for word, count in word_counts.most_common(50):\n",
+        "        print(f\"{word}: {count}\")\n",
+        "\n",
+        "# 사용 예시\n",
+        "# 데이터프레임 생성\n",
+        "df = pd.read_csv('.csv')\n",
+        "\n",
+        "# 불용어 리스트\n",
+        "stopwords = ['편의점', '충동구매', '말이죠', '편의점에', '했습니다', '쪽지', '편의점에서', '게시글', '댓글', '같습니다', '있는', '하는', '충동']\n",
+        "\n",
+        "# 함수 호출\n",
+        "count_korean_words_frequency(df, 'content')"
+      ],
+      "metadata": {
+        "id": "F7KVodwLIwfh"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 특정 데이터를 포함하는 정보 추출"
+      ],
+      "metadata": {
+        "id": "t97OUxb21Ou7"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "V44cZQMpzjsS"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "def filter_rows_by_keyword(file_path, keyword):\n",
+        "    '''\n",
+        "    :param file_path: 읽어들일 CSV 파일의 경로입니다.\n",
+        "    :param keyword: 필터링할 키워드입니다.\n",
+        "    '''\n",
+        "    # CSV 파일 읽기\n",
+        "    df = pd.read_csv(file_path + '.csv')\n",
+        "\n",
+        "    # '내용' 열에서 키워드를 포함하는 행만 추출\n",
+        "    filtered_df = df[df['내용'].str.contains(keyword, na=False)]\n",
+        "\n",
+        "    # 필터링된 데이터프레임 출력\n",
+        "    print(filtered_df)\n",
+        "\n",
+        "file_path = input(\"파일 이름을 입력하세요 : \")\n",
+        "keyword = input(\"포함되어 있는 키워드를 입력하세요 : \")\n",
+        "\n",
+        "filter_rows_by_keyword(file_path, keyword)"
+      ]
+    }
+  ]
+}
