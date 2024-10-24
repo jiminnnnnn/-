@@ -1,0 +1,34 @@
+import requests
+
+def address_to_latlng(address, api_key):
+    """
+    �꾨줈紐� 二쇱냼瑜� �꾨룄�� 寃쎈룄濡� 蹂��섑븯�� �⑥닔
+    :param address: �꾨줈紐� 二쇱냼
+    :param api_key: Google Maps Geocoding API ��
+    :return: (�꾨룄, 寃쎈룄) �쒗뵆
+    """
+    url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}"
+    response = requests.get(url)
+    data = response.json()
+    if data['status'] == 'OK':
+        location = data['results'][0]['geometry']['location']
+        latitude = location['lat']
+        longitude = location['lng']
+        return latitude, longitude
+    else:
+        print("Geocoding API �붿껌�� �ㅽ뙣�덉뒿�덈떎.")
+        return None
+
+# �꾨줈紐� 二쇱냼
+address = "�쒖슱�밸퀎�� 媛뺣궓援� ��궪�� 123-45"
+
+# Google Maps Geocoding API ��
+api_key = ""
+
+# 二쇱냼瑜� �꾨룄�� 寃쎈룄濡� 蹂���
+latitude, longitude = address_to_latlng(address, api_key)
+if latitude and longitude:
+    print("�꾨룄:", latitude)
+    print("寃쎈룄:", longitude)
+else:
+    print("二쇱냼瑜� 蹂��섑븷 �� �놁뒿�덈떎.")
