@@ -32,7 +32,7 @@ Here are some ideas to get you started:
 ## ⚡사용기술
 ### 	스킬 : Python, 자연어 처리, selenium, beautiful soup, pandas, api
 
-## ⚡핵심기능
+## ⚡핵심 작업
 ### 	1. Selenium을 활용한 비정형 데이터 수집 
 ### 	2. 토픽 분석 기법을 이용한 데이터 시각화 (편의점 우산 인식 데이터)
 ### 	3. Pandas를 활용한 데이터 정제 (서울시 따릉이 데이터)
