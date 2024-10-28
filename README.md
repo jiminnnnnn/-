@@ -28,7 +28,8 @@ Here are some ideas to get you started:
 	신지민 : 자연어 처리, 자료조사, 셀레니움을 활용한 데이터 수집
 
 ## ⚡사용기술
-### 	스킬 : Python, 자연어 처리, selenium
+### 	스킬 : 자연어 분석 처리, 토픽 분석, pandas, selenium, api
+Python, 자연어 처리, selenium
 
 ## ⚡핵심기능
 ### 	1. 데이터 수집 및 분석을 통해 GS25 조사
