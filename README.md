@@ -53,4 +53,4 @@ Here are some ideas to get you started:
 ### 	1.참고 사이트
 <https://www.notion.so/be6863e600af4dab8491a1a9cf98c165>
 ### 	2.발표자료
- 
+<https://drive.google.com/file/d/1HdT4hgR4bHSfTVH8Rcu8KRHdLRUBjTKr/view?usp=sharing>
