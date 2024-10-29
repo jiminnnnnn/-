@@ -34,6 +34,7 @@ Here are some ideas to get you started:
 
 ## ⚡핵심 작업
 ### 	1. Selenium을 활용한 비정형 데이터 수집 
+![우천비우천](https://github.com/user-attachments/assets/5b531a4b-e10e-466a-97b4-77d77fecf70c)
 ### 	2. 토픽 분석 기법을 이용한 데이터 시각화 (편의점 우산 인식 데이터)
 ### 	3. Pandas를 활용한 데이터 정제 (서울시 따릉이 데이터)
 ### 	4. Beautiful Soup을 통한 자연어 처리 및 시각화 (블로그, 카페 데이터)
