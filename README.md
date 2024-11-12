@@ -18,8 +18,8 @@ Here are some ideas to get you started:
 
 ## 👋 GS25 공유우산 
 데이터 분석을 통해 GS25에게 공유우산 사업을 제안하는 프로젝트
-[![image](https://github.com/user-attachments/assets/80c95bbe-9668-4e72-ad33-4cc347e95f89)](<https://drive.google.com/file/d/1HdT4hgR4bHSfTVH8Rcu8KRHdLRUBjTKr/view?usp=sharing>)
 <br/>
+[![image](https://github.com/user-attachments/assets/80c95bbe-9668-4e72-ad33-4cc347e95f89)](<https://drive.google.com/file/d/1HdT4hgR4bHSfTVH8Rcu8KRHdLRUBjTKr/view?usp=sharing>)
 <br/>
 
 ## 🌱 프로젝트 정보
