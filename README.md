@@ -30,7 +30,11 @@ Here are some ideas to get you started:
 	신지민 : 자연어 처리, 자료조사, 셀레니움을 활용한 데이터 수집
 
 ## ⚡사용기술
-### 	스킬 : Python, 자연어 처리, selenium, beautiful soup, pandas, api
+### 	스킬 : 프로그래밍 언어: Python 
+### 	데이터 수집 및 크롤링: Selenium, Beautiful Soup 
+### 	데이터 처리 및 분석: Pandas 
+### 	자연어 처리: 형태소 분석, 텍스트 전처리, 키워드 추출 
+### 	API 활용: 공공 데이터 API
 
 ## ⚡핵심 작업
 ### 	1. Selenium을 활용한 비정형 데이터 수집 
